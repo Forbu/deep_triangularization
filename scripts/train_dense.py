@@ -31,6 +31,7 @@ from deep_triangularization.models import MLP_dense, MLP_triangular
 def load_tabular_dataset(path="data/phpkIxskf.arff"):
     """
     Datase coming from https://www.openml.org/search?type=data&sort=nr_of_downloads&status=active&id=31
+    or other
     """
     # load the dataset
     data, meta = arff.loadarff(path)
@@ -215,10 +216,10 @@ for batch in dataloader:
 dim_embedding = 3
 
 # define the model
-model = MLP_triangular(
+model = MLP_dense(
     in_dim=len(mapping_categorical) * dim_embedding + len(mapping_continuous),
     out_dim=2,
-    hidden_dim=128,
+    hidden_dim=256,
     num_layers=3,
 )
 
@@ -230,11 +231,28 @@ classifier = TabularClassifier(
 
 dir_log = "logs/"
 
-# we read all the directories in dir_log and we look at the version_XX/ dir name. We look at the highest XX and 
-# set the version to XX + 1
+from glob import glob
+
+# list all the directories and subdirectories in dir_log
+# we look at the version_XX/ dir name. We look at the highest XX and set the version to XX + 1
+list_dir = glob(dir_log + "**", recursive=True)
+
+# filter the list to keep only the directories
+list_dir = [dir for dir in list_dir if os.path.isdir(dir)]
+
+# now we want the basename of each dir to be able to filter the version_XX/ dir name
+list_dir = [os.path.basename(dir) for dir in list_dir]
+
+# now we look at the version_XX/ dir name
+list_version = [
+    int(dir.split("/")[-1].split("_")[1]) for dir in list_dir if "version_" in dir
+]
+
+# we set the version to the highest version + 1
+version = max(list_version) + 1
 
 # we use a tensorbaord logger
-logger = L.pytorch.loggers.TensorBoardLogger("logs/", name="tabular_classifier_marketing", version=15)
+logger = L.pytorch.loggers.TensorBoardLogger("logs/", name="tabular_classifier_marketing_dense", version=version)
 
 # define the trainer
 trainer = L.Trainer(
