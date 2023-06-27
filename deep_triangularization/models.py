@@ -4,9 +4,13 @@ And also the module that will optimize the triangularization of the network.
 """
 
 import math
+from typing import Any
+from lightning.pytorch.utilities.types import STEP_OUTPUT
 
 import torch
 from torch import nn
+
+import lightning as pl
 
 from deep_triangularization.layers import Triangle
 
@@ -37,7 +41,9 @@ class MLP_dense(nn.Module):
 
         return self.layers[-1](input)
     
-class MLP_triangular(nn.Module):
+
+    
+class MLP_triangular(pl.LightningModule):
     """
     MLP with triangular layers (hidden layers only).
     """

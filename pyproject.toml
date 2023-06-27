@@ -11,6 +11,7 @@ packages = [{include = "deep_triangularization"}]
 python = ">=3.8"
 torch = ">=2.0"
 lightning = ">=2.0"
+datasets = ">=1.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.4.0"

@@ -22,14 +22,14 @@ class Triangle(nn.Module):
         self.upper = upper
 
         # compute a triangular mask
-        self.mask = (
+        mask = (
             torch.triu(torch.ones(out_dim, in_dim), diagonal=1)
             if upper
             else torch.tril(torch.ones(out_dim, in_dim), diagonal=-1)
         )
 
         # we register the mask as a buffer so that it is moved to the device along with the module
-        self.register_buffer("mask", self.mask)
+        self.register_buffer("mask", mask)
 
         self.reset_parameters()
 
