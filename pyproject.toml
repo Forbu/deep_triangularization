@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "deep-triangularization"
+version = "0.1.0"
+description = "Scripts for an experimentation to remove useless sysmetries in a neural network"
+authors = ["Adrien B <adri141193@yahoo.fr>"]
+license = "Apache 2.0"
+readme = "README.md"
+packages = [{include = "deep_triangularization"}]
+
+[tool.poetry.dependencies]
+python = ">=3.8"
+torch = ">=2.0"
+lightning = ">=2.0"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.4.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
