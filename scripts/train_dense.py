@@ -19,6 +19,7 @@ from utils import (
     get_dataloader,
     TabularClassifier,
     compute_next_version,
+    get_train_test_dataloader,
 )
 
 dir_log = "logs/"
@@ -43,18 +44,14 @@ mapping_continuous = {
     if df[feature].dtype != "O" and feature != name_class
 }
 
-# divide df into train and test set
-
 # get the dataloader
-dataloader = get_dataloader(
+train_dataloader, test_dataloader = get_train_test_dataloader(
     df,
     categorical_features=[
         feature for feature in df.columns if df[feature].dtype == "O"
     ],
+    batch_size=256,
 )
-
-####### First model: MLP with dense layers #######
-
 
 # define the model
 model = MLP_dense(
@@ -80,11 +77,11 @@ logger = L.pytorch.loggers.TensorBoardLogger(
 
 # define the trainer
 trainer = L.Trainer(
-    max_epochs=10,
+    max_epochs=30,
     log_every_n_steps=10,
     logger=logger,
     gradient_clip_val=1.0,
 )
 
 # train the model
-trainer.fit(classifier, dataloader)
+trainer.fit(classifier, train_dataloader, test_dataloader)

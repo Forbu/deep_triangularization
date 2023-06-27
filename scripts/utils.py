@@ -2,6 +2,8 @@
 utils from trainer
 """
 import os
+from typing import Any, Optional
+from lightning.pytorch.utilities.types import EVAL_DATALOADERS, STEP_OUTPUT
 
 import pandas as pd
 from scipy.io import arff
@@ -18,6 +20,9 @@ import lightning as L
 
 # import dataloader and dataset class
 from torch.utils.data import DataLoader, Dataset
+
+# import accuracy metric (torchmetrics)
+from torchmetrics import Accuracy
 
 
 def load_tabular_dataset(path="data/phpkIxskf.arff"):
@@ -81,6 +86,24 @@ def get_dataloader(df, batch_size=256, num_workers=0, categorical_features=None)
     return dataloader
 
 
+def get_train_test_dataloader(
+    df, batch_size=256, num_workers=0, categorical_features=None
+):
+    # we split the dataset into train and test set
+    df_train = df.sample(frac=0.8, random_state=42)
+    df_test = df.drop(df_train.index)
+
+    # get the dataloader
+    train_dataloader = get_dataloader(
+        df_train, batch_size, num_workers, categorical_features
+    )
+    test_dataloader = get_dataloader(
+        df_test, batch_size, num_workers, categorical_features
+    )
+
+    return train_dataloader, test_dataloader
+
+
 # now we pytorch lightning we can define the training loop
 class TabularClassifier(L.LightningModule):
     def __init__(self, model, mapping_categorical, mapping_continuous, dim_embedding=3):
@@ -109,6 +132,10 @@ class TabularClassifier(L.LightningModule):
 
         # define the loss function
         self.loss = nn.CrossEntropyLoss()
+
+        # define the accuracy metric
+        self.train_accuracy = Accuracy(task="multiclass", num_classes=2)
+        self.test_accuracy = Accuracy(task="multiclass", num_classes=2)
 
     def forward(self, continuous, categorical):
         # we apply the embedding layers to the categorical features
@@ -140,21 +167,35 @@ class TabularClassifier(L.LightningModule):
         # compute the loss
         loss = self.loss(y_hat, y)
 
-        return loss
+        return loss, (y_hat, y)
 
     def training_step(self, batch, batch_idx):
-        loss = self.compute_loss(batch)
+        loss, (y_hat, y) = self.compute_loss(batch)
 
         self.log("train_loss", loss)
+
+        # compute the accuracy
+        self.train_accuracy(y_hat, y)
 
         return loss
 
     def validation_step(self, batch, batch_idx):
-        loss = self.compute_loss(batch)
+        loss, (y_hat, y) = self.compute_loss(batch)
 
         self.log("validation_loss", loss)
 
+        # compute the accuracy
+        self.test_accuracy(y_hat, y)
+
         return loss
+
+    def on_validation_epoch_end(self):
+        # log the accuracy
+        self.log("validation_accuracy", self.test_accuracy.compute())
+
+    def on_train_epoch_end(self) -> None:
+        # log the accuracy
+        self.log("train_accuracy", self.train_accuracy.compute())
 
     def configure_optimizers(self):
         return torch.optim.Adam(self.parameters(), lr=1e-3)
