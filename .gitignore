@@ -5,6 +5,10 @@ __pycache__/
 
 data/**
 
+**.tfevents.**
+**.yaml
+logs/**
+
 # C extensions
 *.so
 

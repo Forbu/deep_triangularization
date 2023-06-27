@@ -87,23 +87,28 @@ def get_dataloader(df, batch_size=32, num_workers=0, categorical_features=None):
 
 # now we pytorch lightning we can define the training loop
 class TabularClassifier(pl.LightningModule):
-    def __init__(self, model, mapping_categorical, mapping_continuous):
+    def __init__(self, model, mapping_categorical, mapping_continuous, dim_embedding=3):
         super(TabularClassifier, self).__init__()
         self.model = model
 
         self.mapping_categorical = mapping_categorical
         self.mapping_continuous = mapping_continuous
 
-        self.index_categorical = [i for i, feature in enumerate(mapping_categorical)]
+        self.index_categorical = list(mapping_categorical.keys())
 
-        self.index_continuous = [i for i, feature in enumerate(mapping_continuous)]
+        self.index_continuous = list(mapping_continuous.keys())
 
         # we create as many embedding layers as there are categorical features
         self.embeddings = nn.ModuleList(
             [
-                nn.Embedding(len(mapping_categorical[feature]), 3)
+                nn.Embedding(mapping_categorical[feature], dim_embedding)
                 for feature in mapping_categorical
             ]
+        )
+
+        # batch normalization
+        self.batch_norm = nn.BatchNorm1d(
+            len(self.index_categorical) * dim_embedding + len(self.index_continuous)
         )
 
         # define the loss function
@@ -111,6 +116,7 @@ class TabularClassifier(pl.LightningModule):
 
     def forward(self, continuous, categorical):
         # we apply the embedding layers to the categorical features
+
         x = torch.cat(
             [
                 embedding(categorical[:, i])
@@ -118,6 +124,9 @@ class TabularClassifier(pl.LightningModule):
             ],
             dim=1,
         )
+
+        # we apply the batch normalization
+        x = self.batch_norm(torch.cat([x, continuous], dim=1))
 
         return self.model(x)
 
@@ -185,16 +194,19 @@ for batch in dataloader:
 
 ####### First model: MLP with dense layers #######
 
+dim_embedding = 3
+
 # define the model
 model = MLP_dense(
-    in_dim=sum(mapping_categorical.values()) + len(mapping_continuous),
+    in_dim=len(mapping_categorical) * dim_embedding + len(mapping_continuous),
     out_dim=2,
     hidden_dim=128,
     num_layers=5,
 )
 
+
 # define the classifier
-classifier = TabularClassifier(model, mapping_categorical, mapping_continuous)
+classifier = TabularClassifier(model, mapping_categorical, mapping_continuous, dim_embedding=dim_embedding)
 
 # we use a tensorbaord logger
 logger = pl.loggers.TensorBoardLogger("logs/")
@@ -202,9 +214,8 @@ logger = pl.loggers.TensorBoardLogger("logs/")
 # define the trainer
 trainer = pl.Trainer(
     max_epochs=10,
-    gpus=1,
-    progress_bar_refresh_rate=20,
     logger=logger,
+    gradient_clip_val=1.0,
 )
 
 # train the model
