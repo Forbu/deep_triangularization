@@ -29,6 +29,9 @@ from deep_triangularization.models import MLP_dense, MLP_triangular
 
 
 def load_tabular_dataset(path="data/dataset_31_credit-g.arff"):
+    """
+    Datase coming from https://www.openml.org/search?type=data&sort=nr_of_downloads&status=active&id=31
+    """
     # load the dataset
     data, meta = arff.loadarff(path)
 
@@ -162,6 +165,8 @@ print(df.head())
 
 print(df.dtypes)
 
+print(df.shape)
+
 # we compute the mapping for the categorical features
 mapping_categorical = {
     idx: df[feature].nunique()
@@ -206,7 +211,9 @@ model = MLP_dense(
 
 
 # define the classifier
-classifier = TabularClassifier(model, mapping_categorical, mapping_continuous, dim_embedding=dim_embedding)
+classifier = TabularClassifier(
+    model, mapping_categorical, mapping_continuous, dim_embedding=dim_embedding
+)
 
 # we use a tensorbaord logger
 logger = pl.loggers.TensorBoardLogger("logs/")
@@ -220,5 +227,3 @@ trainer = pl.Trainer(
 
 # train the model
 trainer.fit(classifier, dataloader)
-
-
