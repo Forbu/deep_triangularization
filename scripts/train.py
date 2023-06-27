@@ -19,7 +19,7 @@ from sklearn.preprocessing import LabelEncoder
 import torch
 from torch import nn
 
-import pytorch_lightning as pl
+import lightning as L
 
 # import dataloader and dataset class
 from torch.utils.data import DataLoader, Dataset
@@ -89,7 +89,7 @@ def get_dataloader(df, batch_size=32, num_workers=0, categorical_features=None):
 
 
 # now we pytorch lightning we can define the training loop
-class TabularClassifier(pl.LightningModule):
+class TabularClassifier(L.LightningModule):
     def __init__(self, model, mapping_categorical, mapping_continuous, dim_embedding=3):
         super(TabularClassifier, self).__init__()
         self.model = model
@@ -216,10 +216,10 @@ classifier = TabularClassifier(
 )
 
 # we use a tensorbaord logger
-logger = pl.loggers.TensorBoardLogger("logs/")
+logger = L.pytorch.loggers.TensorBoardLogger("logs/")
 
 # define the trainer
-trainer = pl.Trainer(
+trainer = L.Trainer(
     max_epochs=10,
     logger=logger,
     gradient_clip_val=1.0,
