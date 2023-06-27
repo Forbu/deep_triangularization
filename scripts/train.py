@@ -28,7 +28,7 @@ from torch.utils.data import DataLoader, Dataset
 from deep_triangularization.models import MLP_dense, MLP_triangular
 
 
-def load_tabular_dataset(path="data/dataset_31_credit-g.arff"):
+def load_tabular_dataset(path="data/phpkIxskf.arff"):
     """
     Datase coming from https://www.openml.org/search?type=data&sort=nr_of_downloads&status=active&id=31
     """
@@ -75,7 +75,7 @@ class TabularDataset(Dataset):
 
 
 # define the dataloader
-def get_dataloader(df, batch_size=32, num_workers=0, categorical_features=None):
+def get_dataloader(df, batch_size=256, num_workers=0, categorical_features=None):
     dataset = TabularDataset(df, categorical_features)
 
     dataloader = DataLoader(
@@ -151,6 +151,15 @@ class TabularClassifier(L.LightningModule):
 
     def training_step(self, batch, batch_idx):
         loss = self.compute_loss(batch)
+        
+        self.log("train_loss", loss)
+
+        return loss
+    
+    def validation_step(self, batch, batch_idx):
+        loss = self.compute_loss(batch)
+        
+        self.log("validation_loss", loss)
 
         return loss
 
@@ -167,19 +176,23 @@ print(df.dtypes)
 
 print(df.shape)
 
+name_class = "Class"
+
 # we compute the mapping for the categorical features
 mapping_categorical = {
     idx: df[feature].nunique()
     for idx, feature in enumerate(df.columns)
-    if df[feature].dtype == "O" and feature != "class"
+    if df[feature].dtype == "O" and feature != name_class
 }
 
 # we compute the mapping for the continuous features
 mapping_continuous = {
     idx: df[feature].nunique()
     for idx, feature in enumerate(df.columns)
-    if df[feature].dtype != "O" and feature != "class"
+    if df[feature].dtype != "O" and feature != name_class
 }
+
+# divide df into train and test set
 
 # get the dataloader
 dataloader = get_dataloader(
@@ -202,11 +215,11 @@ for batch in dataloader:
 dim_embedding = 3
 
 # define the model
-model = MLP_dense(
+model = MLP_triangular(
     in_dim=len(mapping_categorical) * dim_embedding + len(mapping_continuous),
     out_dim=2,
     hidden_dim=128,
-    num_layers=5,
+    num_layers=3,
 )
 
 
@@ -215,12 +228,18 @@ classifier = TabularClassifier(
     model, mapping_categorical, mapping_continuous, dim_embedding=dim_embedding
 )
 
+dir_log = "logs/"
+
+# we read all the directories in dir_log and we look at the version_XX/ dir name. We look at the highest XX and 
+# set the version to XX + 1
+
 # we use a tensorbaord logger
-logger = L.pytorch.loggers.TensorBoardLogger("logs/")
+logger = L.pytorch.loggers.TensorBoardLogger("logs/", name="tabular_classifier_marketing", version=15)
 
 # define the trainer
 trainer = L.Trainer(
     max_epochs=10,
+    log_every_n_steps=10,
     logger=logger,
     gradient_clip_val=1.0,
 )
