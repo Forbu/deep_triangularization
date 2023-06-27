@@ -152,14 +152,14 @@ class TabularClassifier(L.LightningModule):
 
     def training_step(self, batch, batch_idx):
         loss = self.compute_loss(batch)
-        
+
         self.log("train_loss", loss)
 
         return loss
-    
+
     def validation_step(self, batch, batch_idx):
         loss = self.compute_loss(batch)
-        
+
         self.log("validation_loss", loss)
 
         return loss
@@ -252,7 +252,9 @@ list_version = [
 version = max(list_version) + 1
 
 # we use a tensorbaord logger
-logger = L.pytorch.loggers.TensorBoardLogger("logs/", name="tabular_classifier_marketing_triangle", version=version)
+logger = L.pytorch.loggers.TensorBoardLogger(
+    "logs/", name="tabular_classifier_marketing_triangle", version=version
+)
 
 # define the trainer
 trainer = L.Trainer(
