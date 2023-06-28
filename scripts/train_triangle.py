@@ -9,6 +9,8 @@ import os
 package_path = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, package_path)
 
+import torch
+
 import lightning as L
 from deep_triangularization.models import MLP_triangular
 from utils import (
@@ -74,7 +76,7 @@ logger = L.pytorch.loggers.TensorBoardLogger(
 
 # define the trainer
 trainer = L.Trainer(
-    max_epochs=60,
+    max_epochs=40,
     log_every_n_steps=20,
     logger=logger,
     gradient_clip_val=1.0,
@@ -82,3 +84,8 @@ trainer = L.Trainer(
 
 # train the model
 trainer.fit(classifier, train_dataloader, test_dataloader)
+
+# save the model (state_dict)
+# model add the version 
+model_name = "model_triangle_{}.pt".format(version)
+torch.save(classifier.model.state_dict(), model_name)

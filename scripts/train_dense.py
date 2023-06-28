@@ -9,6 +9,8 @@ import os
 package_path = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, package_path)
 
+
+import torch
 import lightning as L
 
 # import the model
@@ -85,3 +87,8 @@ trainer = L.Trainer(
 
 # train the model
 trainer.fit(classifier, train_dataloader, test_dataloader)
+
+# save the model (state_dict)
+# model add the version
+model_name = "model_dense_{}.pt".format(version)
+torch.save(classifier.model.state_dict(), model_name)
