@@ -12,12 +12,14 @@ class Triangle(nn.Module):
     Simple class that instead of doing a linear transformation, does a triangularization.
     """
 
-    def __init__(self, in_dim, out_dim, upper=True):
+    def __init__(self, in_dim, out_dim, upper=True, bias=True):
         super(Triangle, self).__init__()
         self.in_dim = in_dim
         self.out_dim = out_dim
         self.weight = nn.Parameter(torch.Tensor(out_dim, in_dim))
-        self.bias = nn.Parameter(torch.Tensor(out_dim))
+
+        if bias:
+            self.bias = nn.Parameter(torch.Tensor(out_dim))
 
         self.upper = upper
 
@@ -42,4 +44,8 @@ class Triangle(nn.Module):
     def forward(self, input):
         # we apply the triangular mask to the weight matrix
         weight = self.weight * self.mask
-        return nn.functional.linear(input, weight, self.bias)
+
+        if self.bias is None:
+            return nn.functional.linear(input, weight)
+        else:
+            return nn.functional.linear(input, weight, self.bias)
