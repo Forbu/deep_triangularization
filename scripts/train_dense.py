@@ -60,7 +60,7 @@ model = MLP_dense(
     in_dim=len(mapping_categorical) * dim_embedding + len(mapping_continuous),
     out_dim=2,
     hidden_dim=512,
-    num_layers=3,
+    num_layers=4,
 )
 
 

@@ -12,7 +12,7 @@ class Triangle(nn.Module):
     Simple class that instead of doing a linear transformation, does a triangularization.
     """
 
-    def __init__(self, in_dim, out_dim, upper=True, bias=True):
+    def __init__(self, in_dim, out_dim, upper=True, bias=True, random_rows=True):
         super(Triangle, self).__init__()
         self.in_dim = in_dim
         self.out_dim = out_dim
@@ -29,6 +29,10 @@ class Triangle(nn.Module):
             if upper
             else torch.tril(torch.ones(out_dim, in_dim), diagonal=0)
         )
+
+        # if we want to randomize the rows of the mask
+        if random_rows:
+            mask = mask[torch.randperm(out_dim)]
 
         # we register the mask as a buffer so that it is moved to the device along with the module
         self.register_buffer("mask", mask)

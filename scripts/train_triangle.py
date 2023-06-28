@@ -49,15 +49,15 @@ train_dataloader, test_dataloader = get_train_test_dataloader(
     categorical_features=[
         feature for feature in df.columns if df[feature].dtype == "O"
     ],
-    batch_size=512,
+    batch_size=256,
 )
 
 # define the model
 model = MLP_triangular(
     in_dim=len(mapping_categorical) * dim_embedding + len(mapping_continuous),
     out_dim=2,
-    hidden_dim=256,
-    num_layers=3,
+    hidden_dim=512,
+    num_layers=4,
 )
 
 
