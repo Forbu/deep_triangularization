@@ -59,7 +59,7 @@ train_dataloader, test_dataloader = get_train_test_dataloader(
 model = MLP_dense(
     in_dim=len(mapping_categorical) * dim_embedding + len(mapping_continuous),
     out_dim=2,
-    hidden_dim=256,
+    hidden_dim=512,
     num_layers=3,
 )
 
@@ -79,7 +79,7 @@ logger = L.pytorch.loggers.TensorBoardLogger(
 
 # define the trainer
 trainer = L.Trainer(
-    max_epochs=60,
+    max_epochs=40,
     log_every_n_steps=10,
     logger=logger,
     gradient_clip_val=1.0,
