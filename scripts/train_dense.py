@@ -77,7 +77,7 @@ logger = L.pytorch.loggers.TensorBoardLogger(
 
 # define the trainer
 trainer = L.Trainer(
-    max_epochs=30,
+    max_epochs=60,
     log_every_n_steps=10,
     logger=logger,
     gradient_clip_val=1.0,

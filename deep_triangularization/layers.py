@@ -23,9 +23,9 @@ class Triangle(nn.Module):
 
         # compute a triangular mask
         mask = (
-            torch.triu(torch.ones(out_dim, in_dim), diagonal=1)
+            torch.triu(torch.ones(out_dim, in_dim), diagonal=0)
             if upper
-            else torch.tril(torch.ones(out_dim, in_dim), diagonal=-1)
+            else torch.tril(torch.ones(out_dim, in_dim), diagonal=0)
         )
 
         # we register the mask as a buffer so that it is moved to the device along with the module
