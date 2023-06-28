@@ -227,3 +227,40 @@ def compute_next_version(dir_log):
         version = max(list_version) + 1
 
     return version
+
+
+def init_dataset(path_data="data/phpkIxskf.arff", name_class="Class", batch_size=256):
+    """
+    Function to initialize the dataset
+    """
+
+    # load the dataset
+    df = load_tabular_dataset(path_data)
+
+
+    # we compute the mapping for the categorical features
+    mapping_categorical = {
+        idx: df[feature].nunique()
+        for idx, feature in enumerate(df.columns)
+        if df[feature].dtype == "O" and feature != name_class
+    }
+
+    # we compute the mapping for the continuous features
+    mapping_continuous = {
+        idx: df[feature].nunique()
+        for idx, feature in enumerate(df.columns)
+        if df[feature].dtype != "O" and feature != name_class
+    }
+
+    # get the dataloader
+    train_dataloader, test_dataloader = get_train_test_dataloader(
+        df,
+        categorical_features=[
+            feature for feature in df.columns if df[feature].dtype == "O"
+        ],
+        batch_size=batch_size,
+    )
+    
+    return train_dataloader, test_dataloader, mapping_categorical, mapping_continuous
+    
+    

@@ -19,36 +19,22 @@ from utils import (
     TabularClassifier,
     compute_next_version,
     get_train_test_dataloader,
+    init_dataset,
 )
 
-name_class = "Class"
+
 dir_log = "logs/"
 dim_embedding = 3
 
 # load the dataset
-df = load_tabular_dataset()
-
-
-# we compute the mapping for the categorical features
-mapping_categorical = {
-    idx: df[feature].nunique()
-    for idx, feature in enumerate(df.columns)
-    if df[feature].dtype == "O" and feature != name_class
-}
-
-# we compute the mapping for the continuous features
-mapping_continuous = {
-    idx: df[feature].nunique()
-    for idx, feature in enumerate(df.columns)
-    if df[feature].dtype != "O" and feature != name_class
-}
-
-# get the dataloader
-train_dataloader, test_dataloader = get_train_test_dataloader(
-    df,
-    categorical_features=[
-        feature for feature in df.columns if df[feature].dtype == "O"
-    ],
+(
+    train_dataloader,
+    test_dataloader,
+    mapping_categorical,
+    mapping_continuous,
+) = init_dataset(
+    path_data="data/phpkIxskf.arff",
+    name_class="Class",
     batch_size=256,
 )
 
@@ -87,6 +73,6 @@ trainer = L.Trainer(
 trainer.fit(classifier, train_dataloader, test_dataloader)
 
 # save the model (state_dict)
-# model add the version 
+# model add the version
 model_name = "model_triangle_{}.pt".format(version)
 torch.save(classifier.model.state_dict(), model_name)
