@@ -12,15 +12,19 @@ from utils import (
     init_dataset,
 )
 
+print("reading data ...")
+
 # so we have to take one saved model and visualize the loss function in 2D
 path_model_triangle = "model_triangle_12.pt"
 
 # we load the model
-model = torch.load(path_model_triangle)
+model_weight = torch.load(path_model_triangle)
+
+# now we have 
 
 # we select the second layer
-weights_1 = model["layers.1.weight"]
-weights_2 = model["layers.2.weight"]
+weights_1 = model_weight["layers.1.weight"]
+weights_2 = model_weight["layers.2.weight"]
 
 shape_1 = weights_1.shape
 shape_2 = weights_2.shape
@@ -86,15 +90,19 @@ x_1, x_2 = torch.meshgrid(
 # we compute the loss for each point in the meshgrid
 losses = torch.zeros(x_1.shape)
 
+print(model)
 
 def compute_loss(model, x_1, x_2, batch):
     model["layers.1.weight"] = weights_1 + x_1 * noise_1[0, :, :]
     model["layers.2.weight"] = weights_2 + x_2 * noise_2[0, :, :]
 
+
+
     loss = model.compute_loss(batch)
 
     return loss.item()
 
+print("looping ...")
 
 # we loop over the meshgrid and compute the loss for each point
 for i in range(x_1.shape[0]):
