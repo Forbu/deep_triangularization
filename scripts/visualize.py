@@ -66,8 +66,8 @@ for batch in train_dataloader:
     break
 
 # we compute the loss for each noise
-dx_1 = 0.05
-dx_2 = 0.05
+dx_1 = 0.02
+dx_2 = 0.02
 
 # now we compute a meshgrid around the weights
 x_1, x_2 = torch.meshgrid(
@@ -87,13 +87,11 @@ x_1, x_2 = torch.meshgrid(
 losses = torch.zeros(x_1.shape)
 
 
-def compute_loss(model, x_1, x_2, categorical, continuous):
+def compute_loss(model, x_1, x_2, batch):
     model["layers.1.weight"] = weights_1 + x_1 * noise_1[0, :, :]
     model["layers.2.weight"] = weights_2 + x_2 * noise_2[0, :, :]
 
-    loss = model.compute_loss(
-        (torch.cat([continuous] * n), torch.cat([categorical] * n))
-    )
+    loss = model.compute_loss(batch)
 
     return loss.item()
 
@@ -101,9 +99,7 @@ def compute_loss(model, x_1, x_2, categorical, continuous):
 # we loop over the meshgrid and compute the loss for each point
 for i in range(x_1.shape[0]):
     for j in range(x_1.shape[1]):
-        losses[i, j] = compute_loss(
-            model, x_1[i, j], x_2[i, j], categorical, continuous
-        )
+        losses[i, j] = compute_loss(model, x_1[i, j], x_2[i, j], batch)
 
 # we plot the loss function
 import matplotlib.pyplot as plt
