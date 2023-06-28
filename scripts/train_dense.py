@@ -83,6 +83,7 @@ trainer = L.Trainer(
     log_every_n_steps=10,
     logger=logger,
     gradient_clip_val=1.0,
+    precision="bf16-mixed",
 )
 
 # train the model

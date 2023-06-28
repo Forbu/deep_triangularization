@@ -8,6 +8,7 @@ data/**
 **.tfevents.**
 **.yaml
 logs/**
+**.pt
 
 # C extensions
 *.so

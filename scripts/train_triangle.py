@@ -49,7 +49,7 @@ train_dataloader, test_dataloader = get_train_test_dataloader(
     categorical_features=[
         feature for feature in df.columns if df[feature].dtype == "O"
     ],
-    batch_size=256,
+    batch_size=512,
 )
 
 # define the model
@@ -80,6 +80,7 @@ trainer = L.Trainer(
     log_every_n_steps=20,
     logger=logger,
     gradient_clip_val=1.0,
+    precision=16,
 )
 
 # train the model
