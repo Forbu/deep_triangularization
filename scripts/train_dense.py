@@ -77,4 +77,4 @@ trainer.fit(classifier, train_dataloader, test_dataloader)
 # save the model (state_dict)
 # model add the version
 model_name = "model_dense_{}.pt".format(version)
-torch.save(classifier.model.state_dict(), model_name)
+torch.save(classifier.state_dict(), model_name)

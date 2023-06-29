@@ -12,6 +12,8 @@ from utils import (
     init_dataset,
 )
 
+from deep_triangularization.models import MLP_triangular
+
 print("reading data ...")
 
 # so we have to take one saved model and visualize the loss function in 2D
@@ -19,8 +21,6 @@ path_model_triangle = "model_triangle_12.pt"
 
 # we load the model
 model_weight = torch.load(path_model_triangle)
-
-# now we have 
 
 # we select the second layer
 weights_1 = model_weight["layers.1.weight"]
@@ -30,6 +30,7 @@ shape_1 = weights_1.shape
 shape_2 = weights_2.shape
 n = 5
 m = 5
+dim_embedding = 3
 
 # we generate n random gaussien noise with the same shape as the weights
 noise_1 = torch.randn(n, shape_1[0], shape_1[1])
@@ -57,6 +58,20 @@ loss_function = torch.nn.CrossEntropyLoss()
     name_class="Class",
     batch_size=4096,
 )
+
+# now we have the true model with the weights
+# define the model
+model = MLP_triangular(
+    in_dim=len(mapping_categorical) * dim_embedding + len(mapping_continuous),
+    out_dim=2,
+    hidden_dim=512,
+    num_layers=4,
+)
+
+# define the classifier
+classifier = TabularClassifier(
+    model, mapping_categorical, mapping_continuous, dim_embedding=dim_embedding
+).load_state_dict(model_weight)
 
 index_categorical = list(mapping_categorical.keys())
 index_continuous = list(mapping_continuous.keys())
