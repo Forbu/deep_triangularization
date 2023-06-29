@@ -108,22 +108,30 @@ x_1, x_2 = torch.meshgrid(
 # we compute the loss for each point in the meshgrid
 losses = torch.zeros(x_1.shape)
 
+
 def compute_loss(classifier, x_1, x_2, batch):
-    #model["layers.1.weight"] = weights_1 + x_1 * noise_1[0, :, :]
-    #model["layers.2.weight"] = weights_2 + x_2 * noise_2[0, :, :]
-    classifier.model.layers[1].weight = torch.nn.Parameter(weights_1 + x_1 * noise_1[0, :, :])
-    classifier.model.layers[2].weight = torch.nn.Parameter(weights_2 + x_2 * noise_2[0, :, :])
+    # model["layers.1.weight"] = weights_1 + x_1 * noise_1[0, :, :]
+    # model["layers.2.weight"] = weights_2 + x_2 * noise_2[0, :, :]
+    classifier.model.layers[1].weight = torch.nn.Parameter(
+        weights_1 + x_1 * noise_1[0, :, :]
+    )
+    classifier.model.layers[2].weight = torch.nn.Parameter(
+        weights_2 + x_2 * noise_2[0, :, :]
+    )
 
     loss, (y_hat, y) = classifier.compute_loss(batch)
 
     return loss.item()
 
+
 print("looping ...")
+classifier.eval()
 
 # we loop over the meshgrid and compute the loss for each point
 for i in range(x_1.shape[0]):
     for j in range(x_1.shape[1]):
-        losses[i, j] = compute_loss(classifier, x_1[i, j], x_2[i, j], batch)
+        with torch.no_grad():
+            losses[i, j] = compute_loss(classifier, x_1[i, j], x_2[i, j], batch)
 
 # we plot the loss function
 import matplotlib.pyplot as plt
