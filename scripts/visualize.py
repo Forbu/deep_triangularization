@@ -12,19 +12,19 @@ from utils import (
     init_dataset,
 )
 
-from deep_triangularization.models import MLP_triangular
+from deep_triangularization.models import MLP_triangular, MLP_dense
 
 print("reading data ...")
 
 # so we have to take one saved model and visualize the loss function in 2D
-path_model_triangle = "model_triangle_12.pt"
+path_model_triangle = "model_dense_13.pt"
 
 # we load the model
 model_weight = torch.load(path_model_triangle)
 
 # we select the second layer
-weights_1 = model_weight["layers.1.weight"]
-weights_2 = model_weight["layers.2.weight"]
+weights_1 = model_weight["model.layers.1.weight"]
+weights_2 = model_weight["model.layers.2.weight"]
 
 shape_1 = weights_1.shape
 shape_2 = weights_2.shape
@@ -61,7 +61,7 @@ loss_function = torch.nn.CrossEntropyLoss()
 
 # now we have the true model with the weights
 # define the model
-model = MLP_triangular(
+model = MLP_dense(
     in_dim=len(mapping_categorical) * dim_embedding + len(mapping_continuous),
     out_dim=2,
     hidden_dim=512,
@@ -71,7 +71,10 @@ model = MLP_triangular(
 # define the classifier
 classifier = TabularClassifier(
     model, mapping_categorical, mapping_continuous, dim_embedding=dim_embedding
-).load_state_dict(model_weight)
+)
+
+classifier.load_state_dict(model_weight)
+
 
 index_categorical = list(mapping_categorical.keys())
 index_continuous = list(mapping_continuous.keys())
@@ -105,15 +108,13 @@ x_1, x_2 = torch.meshgrid(
 # we compute the loss for each point in the meshgrid
 losses = torch.zeros(x_1.shape)
 
-print(model)
+def compute_loss(classifier, x_1, x_2, batch):
+    #model["layers.1.weight"] = weights_1 + x_1 * noise_1[0, :, :]
+    #model["layers.2.weight"] = weights_2 + x_2 * noise_2[0, :, :]
+    classifier.model.layers[1].weight = torch.nn.Parameter(weights_1 + x_1 * noise_1[0, :, :])
+    classifier.model.layers[2].weight = torch.nn.Parameter(weights_2 + x_2 * noise_2[0, :, :])
 
-def compute_loss(model, x_1, x_2, batch):
-    model["layers.1.weight"] = weights_1 + x_1 * noise_1[0, :, :]
-    model["layers.2.weight"] = weights_2 + x_2 * noise_2[0, :, :]
-
-
-
-    loss = model.compute_loss(batch)
+    loss, (y_hat, y) = classifier.compute_loss(batch)
 
     return loss.item()
 
@@ -122,7 +123,7 @@ print("looping ...")
 # we loop over the meshgrid and compute the loss for each point
 for i in range(x_1.shape[0]):
     for j in range(x_1.shape[1]):
-        losses[i, j] = compute_loss(model, x_1[i, j], x_2[i, j], batch)
+        losses[i, j] = compute_loss(classifier, x_1[i, j], x_2[i, j], batch)
 
 # we plot the loss function
 import matplotlib.pyplot as plt
