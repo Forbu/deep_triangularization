@@ -17,10 +17,12 @@ from deep_triangularization.models import MLP_triangular, MLP_dense
 print("reading data ...")
 
 # so we have to take one saved model and visualize the loss function in 2D
-path_model_triangle = "model_dense_13.pt"
+path_model_triangle = "model_dense_17.pt"
 
 # we load the model
 model_weight = torch.load(path_model_triangle)
+
+print(model_weight)
 
 # we select the second layer
 weights_1 = model_weight["model.layers.1.weight"]
@@ -94,16 +96,19 @@ dx_2 = 0.02
 # now we compute a meshgrid around the weights
 x_1, x_2 = torch.meshgrid(
     torch.arange(
-        -2.0,
-        2.0,
+        -1.0,
+        1.0,
         dx_1,
     ),
     torch.arange(
-        -2.0,
-        2.0,
+        -1.0,
+        1.0,
         dx_2,
     ),
 )
+
+print(x_1.shape)
+print(x_2.shape)
 
 # we compute the loss for each point in the meshgrid
 losses = torch.zeros(x_1.shape)
@@ -129,6 +134,7 @@ classifier.eval()
 
 # we loop over the meshgrid and compute the loss for each point
 for i in range(x_1.shape[0]):
+    print(i)
     for j in range(x_1.shape[1]):
         with torch.no_grad():
             losses[i, j] = compute_loss(classifier, x_1[i, j], x_2[i, j], batch)
@@ -140,4 +146,4 @@ plt.contourf(x_1, x_2, losses, 100)
 plt.colorbar()
 
 # save the figure
-plt.savefig("loss_function_triangle.png")
+plt.savefig("loss_function_dense.png")
