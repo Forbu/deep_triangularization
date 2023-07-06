@@ -63,7 +63,7 @@ class HeadLinear(nn.Module):
         super(HeadLinear, self).__init__()
         self.hidden_dim = hidden_dim
         self.nb_head = nb_head
-        self.weights = nn.Parameter(torch.randn(m, hidden_dim//nb_head, hidden_dim//nb_head))
+        self.weights = nn.Parameter(torch.randn(nb_head, hidden_dim//nb_head, hidden_dim//nb_head))
 
     def forward(self, x):
         x = rearrange(x, 'b (nb_head d) -> b nb_head d', nb_head=self.nb_head)
