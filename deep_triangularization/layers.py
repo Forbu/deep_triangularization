@@ -6,6 +6,7 @@ import math
 import torch
 from torch import nn
 
+from einops import rearrange
 
 class Triangle(nn.Module):
     """
@@ -53,3 +54,19 @@ class Triangle(nn.Module):
             return nn.functional.linear(input, weight)
         else:
             return nn.functional.linear(input, weight, self.bias)
+
+class HeadLinear(nn.Module):
+    """
+    HeadLinear class which performe diagonal block multiplication in a cleaver way
+    """
+    def __init__(self, hidden_dim, nb_head):
+        super(HeadLinear, self).__init__()
+        self.hidden_dim = hidden_dim
+        self.nb_head = nb_head
+        self.weights = nn.Parameter(torch.randn(m, hidden_dim//nb_head, hidden_dim//nb_head))
+
+    def forward(self, x):
+        x = rearrange(x, 'b (nb_head d) -> b nb_head d', nb_head=self.nb_head)
+        out = torch.einsum('bmd,mdk->bmk', x, self.weights)
+        out = rearrange(out, 'b nb_head k -> b (nb_head k)')
+        return out
