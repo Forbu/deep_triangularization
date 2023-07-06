@@ -60,12 +60,24 @@ class HeadLinear(nn.Module):
     HeadLinear class which performe diagonal block multiplication in a cleaver way
     """
     def __init__(self, hidden_dim, nb_head):
+        """
+        args:
+            hidden_dim: int, the hidden dimension of the input
+            nb_head: int, the number of head to use
+        
+        """
         super(HeadLinear, self).__init__()
         self.hidden_dim = hidden_dim
         self.nb_head = nb_head
+
+        assert hidden_dim % nb_head == 0, "hidden_dim must be divisible by nb_head"
+
         self.weights = nn.Parameter(torch.randn(nb_head, hidden_dim//nb_head, hidden_dim//nb_head))
 
     def forward(self, x):
+        """
+        forward pass of the HeadLinear module
+        """
         x = rearrange(x, 'b (nb_head d) -> b nb_head d', nb_head=self.nb_head)
         out = torch.einsum('bmd,mdk->bmk', x, self.weights)
         out = rearrange(out, 'b nb_head k -> b (nb_head k)')
