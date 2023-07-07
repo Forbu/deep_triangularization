@@ -59,7 +59,7 @@ class Triangle(nn.Module):
 
 class HeadLinear(nn.Module):
     """
-    HeadLinear class which performe diagonal block multiplication in a cleaver way
+    HeadLinear class which performe diagonal block multiplication in a clever way
     """
 
     def __init__(self, hidden_dim, nb_head, random_rows=True):
