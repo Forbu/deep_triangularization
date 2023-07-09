@@ -39,6 +39,16 @@ class HeadLinear(nn.Module):
             nb_head, hidden_dim//nb_head, hidden_dim//nb_head))
 
         self.bias = nn.Parameter(torch.zeros(hidden_dim))
+        
+        # we initialize the weights and bias
+        self.reset_parameters()
+    
+    def reset_parameters(self):
+        
+        nn.init.kaiming_uniform_(self.weights, a=math.sqrt(5))
+        fan_in, _ = nn.init._calculate_fan_in_and_fan_out(self.weights)
+        bound = 1 / math.sqrt(fan_in)
+        nn.init.uniform_(self.bias, -bound, bound)
 
     def forward(self, x):
         """
@@ -52,9 +62,9 @@ class HeadLinear(nn.Module):
         out = torch.einsum('bmd,mdk->bmk', x, self.weights)
         out = rearrange(out, 'b nb_head k -> b (nb_head k)')
 
-        if self.random_rows:
+        #if self.random_rows:
             # we apply the inverse permutation to the output
-            out = out[:, self.inverse_permutation]
+         #   out = out[:, self.inverse_permutation]
 
         return out + self.bias.view(1, -1)
 

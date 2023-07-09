@@ -13,6 +13,7 @@ from torch import nn
 import lightning as pl
 
 from deep_triangularization.layers import Triangle
+from deep_triangularization.layers_multiheads import HeadLinear
 
 
 class MLP_dense(nn.Module):
@@ -67,3 +68,59 @@ class MLP_triangular(pl.LightningModule):
             input = nn.functional.relu(layer(input))
 
         return self.layers[-1](input)
+
+
+class MLP_triangular(pl.LightningModule):
+    """
+    MLP with triangular layers (hidden layers only).
+    """
+
+    def __init__(self, in_dim, out_dim, hidden_dim=128, num_layers=5):
+        super(MLP_triangular, self).__init__()
+        self.in_dim = in_dim
+        self.out_dim = out_dim
+        self.hidden_dim = hidden_dim
+        self.num_layers = num_layers
+
+        self.layers = nn.ModuleList(
+            [
+                nn.Linear(in_dim, hidden_dim),
+                *[Triangle(hidden_dim, hidden_dim) for _ in range(num_layers - 2)],
+                nn.Linear(hidden_dim, out_dim),
+            ]
+        )
+
+    def forward(self, input):
+        for layer in self.layers[:-1]:
+            input = nn.functional.relu(layer(input))
+
+        return self.layers[-1](input)
+
+
+
+class MLP_multihead(pl.LightningModule):
+    """
+    MLP with triangular layers (hidden layers only).
+    """
+
+    def __init__(self, in_dim, out_dim, hidden_dim=128, num_layers=5, nb_head=128):
+        super(MLP_multihead, self).__init__()
+        self.in_dim = in_dim
+        self.out_dim = out_dim
+        self.hidden_dim = hidden_dim
+        self.num_layers = num_layers
+
+        self.layers = nn.ModuleList(
+            [
+                nn.Linear(in_dim, hidden_dim),
+                *[HeadLinear(hidden_dim, nb_head=nb_head) for _ in range(num_layers - 2)],
+                nn.Linear(hidden_dim, out_dim),
+            ]
+        )
+
+    def forward(self, input):
+        for layer in self.layers[:-1]:
+            input = nn.functional.relu(layer(input))
+
+        return self.layers[-1](input)
+

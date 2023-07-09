@@ -10,7 +10,8 @@ packages = [{include = "deep_triangularization"}]
 [tool.poetry.dependencies]
 python = ">=3.8"
 torch = ">=1.0"
-lightning = ">1.0"
+pydantic = "=1.7.4"
+lightning = "=2.0.3"
 pandas = ">=1.0"
 scipy = ">=1.0"
 scikit-learn = ">=0.24"
