@@ -16,6 +16,7 @@ class HeadLinear(nn.Module):
         args:
             hidden_dim: int, the hidden dimension of the input
             nb_head: int, the number of head to use
+            random_rows: bool, if True, the rows of the input are randomly permuted
 
         """
         super(HeadLinear, self).__init__()
