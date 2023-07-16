@@ -53,7 +53,7 @@ class HeadLinear(nn.Module):
         bound = 1 / math.sqrt(fan_in)
         nn.init.uniform_(self.bias, -bound, bound)
 
-    def forward(self, x):
+    def forward(self, x, reset_diagonal=True):
         """
         forward pass of the HeadLinear module
         """
@@ -65,9 +65,9 @@ class HeadLinear(nn.Module):
         out = torch.einsum("bmd,mdk->bmk", x, self.weights)
         out = rearrange(out, "b nb_head k -> b (nb_head k)")
 
-        # if self.random_rows:
-        # we apply the inverse permutation to the output
-        #   out = out[:, self.inverse_permutation]
+        if self.reset_diagonal and self.random_rows:
+            # we apply the inverse permutation to the output
+            out = out[:, self.inverse_permutation]
 
         return out + self.bias.view(1, -1)
 
