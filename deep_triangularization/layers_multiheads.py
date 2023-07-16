@@ -11,7 +11,7 @@ class HeadLinear(nn.Module):
     HeadLinear class which performe diagonal block multiplication in a clever way
     """
 
-    def __init__(self, hidden_dim, nb_head, random_rows=True):
+    def __init__(self, in_dim, out_dim, nb_head, random_rows=True):
         """
         args:
             hidden_dim: int, the hidden dimension of the input
@@ -20,26 +20,28 @@ class HeadLinear(nn.Module):
 
         """
         super(HeadLinear, self).__init__()
-        self.hidden_dim = hidden_dim
+        self.in_dim = in_dim
+        self.out_dim = out_dim
         self.nb_head = nb_head
         self.random_rows = random_rows
 
-        assert hidden_dim % nb_head == 0, "hidden_dim must be divisible by nb_head"
+        assert in_dim % nb_head == 0, "in_dim must be divisible by nb_head"
+        assert out_dim % nb_head == 0, "out_dim must be divisible by nb_head"
 
         # if we want to randomize the rows of the mask
         if random_rows:
             # we register a random permutation of the rows as a buffer so that it is moved to the device along with the module
-            permutation = torch.randperm(hidden_dim)
+            permutation = torch.randperm(in_dim)
             inverse_permutation = torch.argsort(permutation)
 
             self.register_buffer("permutation", permutation)
             self.register_buffer("inverse_permutation", inverse_permutation)
 
         self.weights = nn.Parameter(
-            torch.randn(nb_head, hidden_dim // nb_head, hidden_dim // nb_head)
+            torch.randn(nb_head, in_dim // nb_head, out_dim // nb_head)
         )
 
-        self.bias = nn.Parameter(torch.zeros(hidden_dim))
+        self.bias = nn.Parameter(torch.zeros(out_dim))
 
         # we initialize the weights and bias
         self.reset_parameters()
