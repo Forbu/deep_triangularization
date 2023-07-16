@@ -11,7 +11,7 @@ class HeadLinear(nn.Module):
     HeadLinear class which performe diagonal block multiplication in a clever way
     """
 
-    def __init__(self, in_dim, out_dim, nb_head, random_rows=True):
+    def __init__(self, in_dim, out_dim, nb_head, random_rows=True, reset_diagonal=False):
         """
         args:
             hidden_dim: int, the hidden dimension of the input
@@ -23,7 +23,9 @@ class HeadLinear(nn.Module):
         self.in_dim = in_dim
         self.out_dim = out_dim
         self.nb_head = nb_head
+
         self.random_rows = random_rows
+        self.reset_diagonal = reset_diagonal
 
         assert in_dim % nb_head == 0, "in_dim must be divisible by nb_head"
         assert out_dim % nb_head == 0, "out_dim must be divisible by nb_head"
@@ -55,7 +57,7 @@ class HeadLinear(nn.Module):
         bound = 1 / math.sqrt(fan_in)
         nn.init.uniform_(self.bias, -bound, bound)
 
-    def forward(self, x, reset_diagonal=True):
+    def forward(self, x):
         """
         forward pass of the HeadLinear module
         """
