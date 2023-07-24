@@ -11,7 +11,7 @@ sys.path.insert(0, package_path)
 
 import torch
 
-import lightning as L
+import pytorch_lightning as pl
 from deep_triangularization.models import MLP_multihead
 from utils import (
     load_tabular_dataset,
@@ -44,7 +44,7 @@ model = MLP_multihead(
     out_dim=2,
     hidden_dim=512,
     num_layers=4,
-    nb_head=128,
+    nb_head=512,
 )
 
 
@@ -57,12 +57,12 @@ classifier = TabularClassifier(
 version = compute_next_version(dir_log)
 
 # we use a tensorbaord logger
-logger = L.pytorch.loggers.TensorBoardLogger(
+logger = pl.loggers.TensorBoardLogger(
     "logs/", name="tabular_classifier_multiheadlinear", version=version
 )
 
 # define the trainer
-trainer = L.Trainer(
+trainer = pl.Trainer(
     max_epochs=40,
     log_every_n_steps=20,
     logger=logger,

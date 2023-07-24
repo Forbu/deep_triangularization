@@ -3,7 +3,6 @@ utils from trainer
 """
 import os
 from typing import Any, Optional
-from lightning.pytorch.utilities.types import EVAL_DATALOADERS, STEP_OUTPUT
 
 import pandas as pd
 from scipy.io import arff
@@ -16,7 +15,7 @@ from sklearn.preprocessing import LabelEncoder
 import torch
 from torch import nn
 
-import lightning as L
+import pytorch_lightning as pl
 
 # import dataloader and dataset class
 from torch.utils.data import DataLoader, Dataset
@@ -105,7 +104,7 @@ def get_train_test_dataloader(
 
 
 # now we pytorch lightning we can define the training loop
-class TabularClassifier(L.LightningModule):
+class TabularClassifier(pl.LightningModule):
     def __init__(self, model, mapping_categorical, mapping_continuous, dim_embedding=3):
         super(TabularClassifier, self).__init__()
         self.model = model

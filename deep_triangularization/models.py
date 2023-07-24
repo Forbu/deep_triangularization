@@ -5,12 +5,11 @@ And also the module that will optimize the triangularization of the network.
 
 import math
 from typing import Any
-from lightning.pytorch.utilities.types import STEP_OUTPUT
 
 import torch
 from torch import nn
 
-import lightning as pl
+import pytorch_lightning as pl
 
 from deep_triangularization.layers import Triangle
 from deep_triangularization.layers_multiheads import HeadLinear
@@ -97,7 +96,6 @@ class MLP_triangular(pl.LightningModule):
         return self.layers[-1](input)
 
 
-
 class MLP_multihead(pl.LightningModule):
     """
     MLP with triangular layers (hidden layers only).
@@ -113,7 +111,10 @@ class MLP_multihead(pl.LightningModule):
         self.layers = nn.ModuleList(
             [
                 nn.Linear(in_dim, hidden_dim),
-                *[HeadLinear(hidden_dim, nb_head=nb_head) for _ in range(num_layers - 2)],
+                *[
+                    HeadLinear(hidden_dim, hidden_dim, nb_head=nb_head)
+                    for _ in range(num_layers - 2)
+                ],
                 nn.Linear(hidden_dim, out_dim),
             ]
         )
@@ -123,4 +124,3 @@ class MLP_multihead(pl.LightningModule):
             input = nn.functional.relu(layer(input))
 
         return self.layers[-1](input)
-
